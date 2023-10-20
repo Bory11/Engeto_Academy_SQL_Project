@@ -79,3 +79,39 @@ LEFT JOIN economies AS e ON c.country = e.country
 WHERE YEAR >= 2006 AND YEAR <=2018 AND c.continent = 'Europe'
 ;
 
+/* Výzkumná otázka:
+ * 1) Rostou v průběhu let mzdy ve všech odvětvích, nebo v některých klesají?
+  */
+-- a) View průměrných mezd v odvětvích během let --
+
+CREATE OR REPLACE VIEW v_average_sector_wage_by_year 
+AS SELECT 
+	round(avg(payroll)) AS avg_wage,	
+	payroll_year,
+	industry
+FROM t_marek_borč_project_sql_primary_final
+GROUP BY industry, payroll_year;
+
+-- b) Schéma meziročního srovnání --
+
+CREATE OR REPLACE VIEW v_interannual_changes
+AS SELECT
+	prevyear.industry,
+	prevyear.payroll_year AS previous_year,
+	prevyear.avg_wage AS previous_year_wage,
+	nxtyear.payroll_year AS next_year,
+	nxtyear.avg_wage AS next_year_wage,
+	(nxtyear.avg_wage - prevyear.avg_wage) AS annual_change,
+	round(((nxtyear.avg_wage - prevyear.avg_wage)/prevyear.avg_wage*100), 2) AS 'percentage %',
+	CASE 
+		WHEN nxtyear.avg_wage > prevyear.avg_wage > 0 THEN 'Growth'
+		WHEN nxtyear.avg_wage = prevyear.avg_wage THEN 'No change'
+		ELSE 'Decline'
+	END AS 'annual_change_status'
+FROM v_average_sector_wage_by_year AS prevyear
+JOIN v_average_sector_wage_by_year AS nxtyear
+	ON nxtyear.payroll_year = prevyear.payroll_year + 1
+	-- jednoroční posun --
+	AND prevyear.industry = nxtyear.industry
+	-- podmínka pro smysluplné kombinace --
+	;
