@@ -38,6 +38,8 @@ CREATE OR REPLACE TABLE t_marek_borč_project_SQL_primary_final
 SELECT
 	cpc.name AS product,
 	cp.value AS price,
+	cpc.price_value AS price_value,
+	cpc.price_unit AS price_unit,
 	DATE_FORMAT(cp.date_from, '%Y-%m-%d') AS price_measured_from,
     DATE_FORMAT(cp.date_to, '%Y-%m-%d') AS price_measured_to,
 	cpib.name AS industry,
@@ -49,9 +51,9 @@ JOIN czechia_payroll AS cpay
 	AND cpay.payroll_year BETWEEN 2006 AND 2018
 	AND cpay.value_type_code = 5958
 JOIN czechia_price_category AS cpc 
-	ON cp.category_code = cpc.code 
+	ON cpc.code = cp.category_code
 LEFT JOIN czechia_payroll_industry_branch AS cpib 
-	ON cpay.industry_branch_code = cpib.code 
+	ON cpib.code = cpay.industry_branch_code
 ;
 
 /*
@@ -143,3 +145,26 @@ ORDER BY industry asc, annual_change_status desc;
    Mzdy meziročně rostly v rámci průmyslových odvětví v 205 z 228 instancí. 
    Mzdy meziročně vždy rostly v rámci tří odvětví - Doprava a skladování, Ostatní činnosti a Zdravotní a sociální péče. 
    Nejvícekrát - 4x - poklesly meziročně mzdy v rámci odvětví Těžba a dobývání. */
+
+/* Výzkumná otázka:
+   2) Kolik je možné si koupit litrů mléka a kilogramů chleba za první a poslední srovnatelné období v dostupných datech cen a mezd?
+*/
+
+SELECT
+	product,
+	round(avg(price * price_value), 2) AS 'avg_yearly_product_price',
+	payroll_year AS 'year',
+	industry,
+	round(avg(payroll), 2) AS avg_monthly_payroll_in_a_year,
+	round(avg(payroll) / avg(price * price_value)) AS 'product_amount_per_payroll'
+FROM t_marek_borč_project_sql_primary_final AS tmbpspf
+WHERE (payroll_year = 2006 OR payroll_year = 2018) AND (product = 'Mléko polotučné pasterované' OR product = 'Chléb konzumní kmínový')
+GROUP BY product, industry, payroll_year
+ORDER BY product, YEAR asc, product_amount_per_payroll desc
+;
+
+/* V roce 2006 bylo možné si za průměrnou mzdu v rámci jednotlivých odvětví koupit za průměrnou cenu produktů mezi 2 462 a 706 kilogramy chleba (průměrná cena 16,12 Kč)
+  a mezi 2 749 a 789 litry mléka (průměrná cena 14,44 Kč). Nejvyšší průměrná mzda patřila k oboru Peněžnictví a pojišťovnictví, nejnižší k oboru Ubytování, stravování a pohostinství.
+   V roce 2018 bylo možné si za průměrnou mzdu v rámci jednotlivých odvětví koupit za průměrnou cenu produktů mezi 2 315 a 774 kilogramy chleba (průměrná cena 24,44 Kč)
+  a mezi 2 831 a 947 litry mléka (průměrná cena 19,82 Kč). Nejvyšší průměrná mzda patřila k oboru Informační a komunikační činnosti, nejnižší k oboru Ubytování, stravování a pohostinství.
+*/
