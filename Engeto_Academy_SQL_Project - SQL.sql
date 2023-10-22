@@ -92,7 +92,7 @@ AS SELECT
 FROM t_marek_borč_project_sql_primary_final
 GROUP BY industry, payroll_year;
 
--- b) Schéma meziročního srovnání --
+-- b) View meziročních srovnání v rámci odvětví --
 
 CREATE OR REPLACE VIEW v_interannual_changes
 AS SELECT
@@ -115,3 +115,31 @@ JOIN v_average_sector_wage_by_year AS nxtyear
 	AND prevyear.industry = nxtyear.industry
 	-- podmínka pro smysluplné kombinace --
 	;
+
+SELECT 
+	industry,
+	CASE WHEN next_year_wage > previous_year_wage THEN TRUE
+	ELSE FALSE
+	END AS 'growth'
+FROM v_interannual_changes AS vic
+GROUP BY industry ;
+
+SELECT 
+	annual_change_status AS annual_change_within_industry,
+	count(annual_change_status) AS 'count'
+FROM v_interannual_changes AS vic 
+GROUP BY annual_change_status
+ORDER BY annual_change_status desc;
+
+SELECT 
+	industry,
+	annual_change_status AS annual_change_within_industry,
+	count(annual_change_status) AS 'count'
+FROM v_interannual_changes AS vic 
+GROUP BY industry, annual_change_status
+ORDER BY industry asc, annual_change_status desc;
+
+/* V průběhu celého období rostly mzdy ve všech odvětvích.
+   Mzdy meziročně rostly v rámci průmyslových odvětví v 205 z 228 instancí. 
+   Mzdy meziročně vždy rostly v rámci tří odvětví - Doprava a skladování, Ostatní činnosti a Zdravotní a sociální péče. 
+   Nejvícekrát - 4x - poklesly meziročně mzdy v rámci odvětví Těžba a dobývání. */
