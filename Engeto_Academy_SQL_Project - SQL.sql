@@ -118,6 +118,26 @@ JOIN v_average_sector_wage_by_year AS nxtyear
 	-- podmínka pro smysluplné kombinace --
 	;
 
+-- alternativně přes LAG místo SELF JOIN, zhruba dvakrát rychlejší --
+
+CREATE OR REPLACE VIEW v_interannual_changes_alt
+AS SELECT 
+	industry,
+	payroll_year,
+	avg_wage,
+	LAG(avg_wage) OVER (PARTITION BY industry ORDER BY payroll_year) AS avg_wage_previous_year,
+	avg_wage - LAG(avg_wage) OVER (PARTITION BY industry ORDER BY payroll_year) AS YoY_difference,
+	round((avg_wage - LAG(avg_wage) OVER (PARTITION BY industry ORDER BY payroll_year)) / (LAG(avg_wage) OVER (PARTITION BY industry ORDER BY payroll_year))*100, 2) AS YoY_difference_percentual,
+	CASE 
+		WHEN avg_wage > LAG(avg_wage) OVER (PARTITION BY industry ORDER BY payroll_year) > 0 THEN 'Growth'
+		WHEN avg_wage = LAG(avg_wage) OVER (PARTITION BY industry ORDER BY payroll_year) THEN 'No change'
+		ELSE 'Decline'
+	END AS 'annual_change_status'
+FROM v_average_sector_wage_by_year AS vaswby
+;
+
+-- Selecty pro zodpovězení otázky, z v_interannual_changes --
+
 SELECT 
 	industry,
 	CASE WHEN next_year_wage > previous_year_wage THEN TRUE
