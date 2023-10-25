@@ -35,8 +35,8 @@ JOIN v_average_product_price_by_year AS nxtyear
 	
 SELECT 
 	product,
-	round(sum(percentage), 2) AS cumulative_percentual_growth,
-	round(avg(percentage), 2) AS average_percentual_growth
+	round(sum(YoY_percentage), 2) AS cumulative_percentual_growth,
+	round(avg(YoY_percentage), 2) AS average_percentual_growth
 FROM v_interannual_changes_products AS vicp
 GROUP BY product
 ORDER BY cumulative_percentual_growth ASC;
