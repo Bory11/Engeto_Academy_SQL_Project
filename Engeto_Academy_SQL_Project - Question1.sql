@@ -36,7 +36,7 @@ JOIN v_average_sector_wage_by_year AS nxtyear
 	-- podmínka pro smysluplné kombinace --
 	;
 
--- alternativně přes LAG místo SELF JOIN, zhruba dvakrát rychlejší --
+-- alternativně přes LAG místo SELF JOIN, o třetinu rychlejší --
 
 CREATE OR REPLACE VIEW v_interannual_changes_alt
 AS SELECT 
