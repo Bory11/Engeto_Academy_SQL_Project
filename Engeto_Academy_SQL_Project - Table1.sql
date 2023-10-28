@@ -8,8 +8,6 @@ SELECT
 	avg(cp.value) AS price,
 	cpc.price_value AS price_value,
 	cpc.price_unit AS price_unit,
-	DATE_FORMAT(cp.date_from, '%Y-%m-%d') AS price_measured_from,
-    DATE_FORMAT(cp.date_to, '%Y-%m-%d') AS price_measured_to,
 	cpib.name AS industry,
 	avg(cpay.value) AS payroll,
 	cpay.payroll_year
