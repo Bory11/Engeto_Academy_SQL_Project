@@ -24,8 +24,11 @@ Vypracovat SQL podklady pro odpovědi na zadané výzkumné otázky týkající 
 
 # Poznatky z průběhu vypracování
 Tabulka 1: Původně řešená tabulka značně neefektivní kvůli zbytečnému množství redundantních dat. Následná optimalizace.
+
 Otázka 1: Původní řešení přes SELF JOIN, následná optimalizace přes fci lag().
+
 Otázka 4: Původní řešení přes nepřehledné výpočty přes fci lag(), následná optimalizace přes Common table expression.
+
 Otázka 5: Experimentální snaha o výpočet Spearmanova korelačního koeficientu přes vícero CTE.
 
 # Informace o datech
