@@ -1,4 +1,6 @@
-Engeto Academy SQL Project
+Engeto Discord: Marek B.
+
+# Engeto Academy SQL Project
 
 # Struktura projektu
 README.md
