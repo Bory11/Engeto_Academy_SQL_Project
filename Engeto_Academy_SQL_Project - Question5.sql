@@ -1,8 +1,12 @@
 /* Výzkumná otázka: * 
- * 4) Má výška HDP vliv na změny ve mzdách a cenách potravin? 
+ * 5) Má výška HDP vliv na změny ve mzdách a cenách potravin? 
 Neboli, pokud HDP vzroste výrazněji v jednom roce, projeví se to na cenách potravin či mzdách ve stejném nebo násdujícím roce výraznějším růstem? */
 
--- Skrze nahrubo naroubovanou Spearmanovu korelaci přes multiple CTE vycházející z předchozích otázek??? (MariaDB korelace neumí) --
+/* Skrze nahrubo naroubovanou Spearmanovu korelaci přes multiple CTE vycházející z předchozích otázek??? (MariaDB korelace neumí)
+ * H1 - HDP má vliv na mzdy/ceny
+ * H0 - HDP nemá vliv na mzdy/ceny
+ * p = 0,05
+ */
 
 WITH spearman_d AS (
 	WITH rolling_GDP_wage_price_percentual AS (
@@ -45,10 +49,12 @@ WITH spearman_d AS (
 	)
 SELECT
 	round(1-((6*sum(d_wage_squared)) / (12*(pow(12, 2)-1))), 5) AS GDP_wages_Spearman,
-	round(1-((6*sum(d_price_squared)) / (12*(pow(12, 2)-1))), 5) AS GDP_prices_Spearman
+	round(1-((6*sum(d_price_squared)) / (12*(pow(12, 2)-1))), 5) AS GDP_prices_Spearman,
+	(round(1-((6*sum(d_wage_squared)) / (12*(pow(12, 2)-1))), 5)*sqrt(12-2))*sqrt(1-pow(round(1-((6*sum(d_wage_squared)) / (12*(pow(12, 2)-1))), 5), 2)) AS t_wage,
+	(round(1-((6*sum(d_price_squared)) / (12*(pow(12, 2)-1))), 5)*sqrt(12-2))*sqrt(1-pow(round(1-((6*sum(d_price_squared)) / (12*(pow(12, 2)-1))), 5), 2)) AS t_price
 FROM spearman_d
 ;
 
-/* r(s) pro vztah HDP a mzdy = 0.48252, což značí slabou až střední pozitivní korelaci. p-hodnota není dostupná.
- * r(s) pro vztah HDP a cen = 0.28671, což značí slabou pozitivní korelaci. p-hodnota není dostupná.
+/* r(s) pro vztah HDP a mzdy = 0.48252, což značí slabou až střední pozitivní korelaci. p = 0,11. Nemůžeme tady zamítnout nulovou hypotézu.
+ * r(s) pro vztah HDP a cen = 0.28671, což značí slabou pozitivní korelaci. p-hodnota není dostupná. p = 0,36. Nemůžeme tady zamítnout nulovou hypotézu.
  */
